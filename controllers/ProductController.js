@@ -2,17 +2,14 @@ const { response, request } = require('express');
 const HttpStatus = require('http-status-codes');
 
 const Contenedor = require('../models/Contenedor');
+const knexConfig = require("../knexfile");
 
-const productRepository = new Contenedor('products.json');
+const productRepository = new Contenedor(knexConfig[process.env.NODE_ENV], 'products');
 
 class ProductController {
 
-    async _findAllProducts() {
-        return await productRepository.getAll();
-    }
-
     async findAll(req = request, res = response) {
-        const products = await this._findAllProducts();
+        const products = await productRepository.getAll();
 
         res.status(HttpStatus.OK).json(products);
     }
@@ -22,15 +19,19 @@ class ProductController {
 
         const product = await productRepository.getById(id);
 
-        const statusCode = !product ? HttpStatus.NOT_FOUND : HttpStatus.OK;
+        const statusCode = product
+            ? HttpStatus.OK
+            : HttpStatus.NOT_FOUND;
 
-        return res.status(statusCode).json(product || { error: 'Product not found' });
+        const result = product ? product : { error: 'Product not found' }
+
+        return res.status(statusCode).json(result);
     }
 
     async save(req = request, res = response) {
         const { ...newProduct } = req.body;
 
-        const id = productRepository.save(newProduct);
+        const id = await productRepository.save(newProduct);
 
         res.status(HttpStatus.CREATED).json({ id });
     }
