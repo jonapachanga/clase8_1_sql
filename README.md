@@ -1,4 +1,4 @@
-# CoderHouse Clase 4 - API Rest
+# CoderHouse Clase 8  - SQL
 
 ## Set environment variables
 
